@@ -98,6 +98,17 @@ class Tracker:
     def process_frame(self, image):
         self.frame_count += 1
 
+        #1 - Generate all the poses
         self.poses = self.get_pose(image)
+
+        #2 - see if the pose is someone we've seen in our people,
+        # or if it's someone new to create a new person object for
+
+        #3 - For each of the people, generate the faces for that person
+        # Note - do this only every couple of frames to keep frame rate up
         self.faces = self.get_faces(image)
+
+        #4 - Now that we've generated the people, tick through all people
+        # in order to have their decay occur
+
         
