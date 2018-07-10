@@ -5,6 +5,8 @@ import math
 import face_recognition
 import pickle
 
+from .Person import Person
+
 class Tracker:
 
     """
@@ -21,7 +23,7 @@ class Tracker:
     faces = [] positions of faces from current frame
     """
 
-    def __init__(self, pairs):
+    def __init__(self):
         self.frame_count = 0
 
         self.names = {}
@@ -34,54 +36,6 @@ class Tracker:
         h = 368
         return self.estimator.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
 
-    def get_faces(self, image):
-
-        headparts = [0, 1, 14, 15, 16, 17]
-
-        faces = []
-
-        for pose in self.poses:
-
-            left = image.shape[1]
-            right = 0
-            top = image.shape[0]
-            bottom = 0
-
-            nose = None
-            neck = None
-
-            for body_part in pose.body_parts:
-                if pose.body_parts[body_part].part_idx in headparts:
-                    # Detect the leftmost, rightmost, bottommost, and topmost positions
-                    x = math.floor(pose.body_parts[body_part].x * image.shape[1])
-                    y = math.floor(pose.body_parts[body_part].y * image.shape[0])
-
-                    if x < left:
-                        left = x
-                    if x > right:
-                        right = x
-                    if y < top:
-                        top = y
-                    if y > bottom:
-                        bottom = y
-
-                    if body_part == 0:
-                        nose = pose.body_parts[body_part]
-                    elif body_part == 1:
-                        neck = pose.body_parts[body_part]
-
-            if neck is not None and nose is not None:
-                nn_distance = math.floor((neck.y - nose.y) * image.shape[0])
-                
-                top = top - nn_distance
-                if top < 0:
-                    top = 0
-
-            faces.append([top, left, bottom, right])
-
-        return faces
-
-
     def get_encodings(self, image, faces):
         pass
 
@@ -91,8 +45,42 @@ class Tracker:
     def update_people(self):
         pass
 
-    def draw_output(self, image):
-        pass
+    def draw_output(self, image, draw_body=True, draw_face=True, draw_label=True):
+        if draw_body:
+            poses = []
+            for person in self.people:
+                if person.is_visible:
+                    poses.append(person.pose)
+
+            print(poses, len(poses))
+            # poses = list(map(lambda person: person.pose if person.is_visible, self.people))
+            TfPoseEstimator.draw_humans(image, poses, imgcopy=False)
+
+        for person in self.people:
+            if not self.people[person].is_visible:
+                continue
+
+            if draw_face:
+                top, left, bottom, right = self.people[person].face
+
+                top = math.floor(top * image.shape[0])
+                bottom = math.floor(bottom * image.shape[0])
+                left = math.floor(left * image.shape[1])
+                right = math.floor(right * image.shape[1])
+
+                cv2.rectangle(image, (left, top), (right, bottom), (0,0, 255), 2, 0)
+
+                # if draw_label:
+                #     label = ""
+                #     if self.people[person].name:
+                #         label = self.people[person].name
+                #     else:
+                #         label = self.people[person].id
+                #     cv2.putText(image, label, (right, bottom), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
+
+
+        return image
+
 
     # Handed a frame to process for tracking
     def process_frame(self, image):
@@ -101,14 +89,42 @@ class Tracker:
         #1 - Generate all the poses
         self.poses = self.get_pose(image)
 
+        #3 - Tick each person
+        for person in self.people:
+            self.people[person].tick()
+
         #2 - see if the pose is someone we've seen in our people,
-        # or if it's someone new to create a new person object for
+        # or if it's someone new to create a new person object for      
+        new_people = []
 
-        #3 - For each of the people, generate the faces for that person
-        # Note - do this only every couple of frames to keep frame rate up
-        self.faces = self.get_faces(image)
+        for pose in self.poses:
+            handled = False
+            for person in self.people:
+                if self.people[person].is_it_you(pose):
+                    print("ITS ME", person.id)
+                    #Handle the update case
+                    self.people[person].update(pose)
 
-        #4 - Now that we've generated the people, tick through all people
+                    #Mark it as handled
+                    handled = True
+                    break
+
+            if handled:
+                continue
+            else:
+                print("NEW PERSON")
+                #Create a new person
+                person = Person()
+                person.update(pose)
+                new_people.append(person)
+
+        for person in new_people:
+            self.people[person] = person
+            
+        #4 - Now that we've generated the people, "tock" through all people
         # in order to have their decay occur
+        for person in self.people:
+            self.people[person].tock()
+
 
         
