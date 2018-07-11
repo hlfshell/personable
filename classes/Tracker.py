@@ -16,6 +16,7 @@ class Tracker:
     names = dict of names, key is uuid
 
     frame_count = count of frames tracked
+    scan_every_n_frames = # of frames between person scanning their face
 
     estimator = TfPoseEstimator
 
@@ -25,6 +26,8 @@ class Tracker:
 
     def __init__(self):
         self.frame_count = 0
+        self.scan_every_n_frames = 72
+        self.max_face_scans = 5
 
         self.names = {}
         self.people = {}
@@ -81,6 +84,26 @@ class Tracker:
 
         return image
 
+    def scan_face(self, image, person):
+        if not person.is_visible:
+            return
+        
+        top, left, bottom, right = person.face
+
+        top = math.floor(top * image.shape[0])
+        left = math.floor(top * image.shape[1])
+        bottom = math.floor(top * image.shape[0])
+        right = math.floor(top * image.shape[1])
+        print("SCANNING", person.id)
+        encoding = face_recognition.face_encodings(image, [(top, right, bottom, left)])
+        
+        if len(encoding) <= 0:
+            return
+
+        person.set_encoding(encoding)
+
+    def compare_known_faces(self, person):
+        pass
 
     # Handed a frame to process for tracking
     def process_frame(self, image):
@@ -121,6 +144,19 @@ class Tracker:
         #4 - Now that we've generated the people, "tock" through all people
         # in order to have their decay occur
         for person in self.people:
+            #scan the face of all new people
+            if person in new_people:
+                self.scan_face(image, person)
+
+            #Scan the face of everyone else that hasnt been scanned for
+            #self.scan_every_n_frames
+
+            if person.is_visible and person.last_face_scan % self.scan_every_n_frames == 0 and len(person.encodings) < self.max_face_scans:
+                self.scan_face(image, person)
+
+            if person.last_face_scan == 0:
+                self.compare_known_faces(person)
+
             self.people[person].tock()
 
 

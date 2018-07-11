@@ -13,6 +13,8 @@ class Person:
     pose - last known pose estimation 
     face - boundaries (top, left, bottom, right) of face bounding box
     encodings - [] of known facial encodings
+    last_face_scan - how many frames since the last face scan (stops counting after max face scans hit)
+    scan_faces_every_n_frames - how often to check faces
 
     is_visible - is it currently visible
     last_seen - how many frames since the person has been seen last
@@ -27,6 +29,9 @@ class Person:
         self.is_visible = False
 
         self.pose = []
+
+        self.encodings = []
+        self.last_face_scan = None
     
     def tock(self):
         if not self.is_visible:
@@ -35,6 +40,7 @@ class Person:
     def tick(self):
         #reset visiblity
         self.is_visible = False
+        self.last_face_scan += 1
 
     #calculate the face boundaries
     def calculate_face(self):
@@ -114,3 +120,7 @@ class Person:
         self.face = self.calculate_face()
         self.is_visible = True
         self.last_seen = 0
+
+    def set_encoding(self, encoding):
+        self.encodings.append(encoding)
+        self.last_face_scan = 0
