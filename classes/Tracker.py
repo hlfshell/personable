@@ -52,7 +52,7 @@ class Tracker:
                 if person.is_visible:
                     poses.append(person.pose)
 
-            print(poses, len(poses))
+            # print(poses, len(poses))
             # poses = list(map(lambda person: person.pose if person.is_visible, self.people))
             TfPoseEstimator.draw_humans(image, poses, imgcopy=False)
 
@@ -100,19 +100,16 @@ class Tracker:
         for pose in self.poses:
             handled = False
             for person in self.people:
-                if self.people[person].is_it_you(pose):
-                    print("ITS ME", person.id)
-                    #Handle the update case
+                difference = self.people[person].distance_from_pose(pose)
+                if difference < .05:
                     self.people[person].update(pose)
 
-                    #Mark it as handled
                     handled = True
                     break
 
             if handled:
                 continue
             else:
-                print("NEW PERSON")
                 #Create a new person
                 person = Person()
                 person.update(pose)

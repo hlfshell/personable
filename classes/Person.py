@@ -34,7 +34,6 @@ class Person:
 
     def tick(self):
         #reset visiblity
-        print("tick", self.id)
         self.is_visible = False
 
     #calculate the face boundaries
@@ -78,39 +77,36 @@ class Person:
 
         return (top, left, bottom, right)
 
-    #Given pose data and your last pose, is this new pose you?
-    #Maybe redo this with a calculated center of mass via torso?
-    # Can we just assume that position if we just have neck and shoulders?
-    def is_it_you(self, pose):
-        #Pay attention to only central torso body parts
-        torso_parts = [1, 2, 5, 8, 11]
-
-        distances = []
+    #Calculate the distance difference between the two poses given
+    def distance_from_pose(self, pose):
+        differences = []
         for body_part in pose.body_parts:
-            if body_part not in torso_parts:
-                continue
-
-            #We should have either 1 or 0 matches
-            if hasattr(self.pose.body_parts, str(body_part)):
-                #Compare total difference
+            # print("body part", body_part, str(body_part))
+            # print(self.pose.body_parts)
+            # print(self.pose.body_parts[body_part])
+            # print(hasattr(self.pose.body_parts, str(body_part)))
+            # print(type(self.pose.body_parts))
+            try:
                 difference_x = pose.body_parts[body_part].x - self.pose.body_parts[body_part].x
                 difference_y = pose.body_parts[body_part].y - self.pose.body_parts[body_part].y
 
-                distance = math.sqrt((difference_x ** 2) + (difference_y ** 2))
+                difference_total = math.sqrt( difference_x ** 2 + difference_y ** 2 )
+                differences.append(difference_total)
+            except:
+                continue
+            
+            # if hasattr(self.pose.body_parts, str(body_part)):
+            #     difference_x = pose.body_parts[body_part].x - self.pose.body_parts[body_part].x
+            #     difference_y = pose.body_parts[body_part].y - self.pose.body_parts[body_part].y
 
-                distances.append(distance)
-                print("distance", distance)
-        
-        if len(distances) > 0:
-            average_distance = functools.reduce(lambda total, current: total+current, distances) / len(distances)
+            #     difference_total = math.sqrt( difference_x ** 2 + difference_y ** 2 )
+            #     differences.append(difference_total)
+        if len(differences) <= 0:
+            average_difference = 1
         else:
-            print("no distances")
-            #Is this the right fail case?
-            average_distance = 0
+            average_difference = sum(differences) / len(differences)
 
-        print("distance", self.id, average_distance)
-        return average_distance < .05
-
+        return average_difference
 
 
     def update(self, pose):
