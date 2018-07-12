@@ -17,6 +17,8 @@ class Tracker:
 
     frame_count = count of frames tracked
     scan_every_n_frames = # of frames between person scanning their face
+    maximum_difference_to_match = the maximum average differnece of points to 
+                                    mark it as not the same pose
 
     estimator = TfPoseEstimator
 
@@ -28,21 +30,28 @@ class Tracker:
         self.frame_count = 0
         self.scan_every_n_frames = 72
         self.max_face_scans = 5
+        self.maximum_difference_to_match = 0.08
 
         self.names = {}
         self.people = {}
 
         self.estimator = TfPoseEstimator(get_graph_path("mobilenet_thin"), target_size=(432, 368))
+        self.encodings = {}
+
+    def load_encodings(self, filepath):
+        self.encodings = pickle.loads(open("./encodings.p", "rb").read())
+
+    def save_encodings(self, filepath):
+        encoding_file = open(filepath, "wb")
+        encoding_file.write(pickle.dumps(self.encodings))
+        encoding_file.close()
 
     def get_pose(self, image):
         w = 432
         h = 368
         return self.estimator.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
 
-    def get_encodings(self, image, faces):
-        pass
-
-    def compare_encoding(self, encoding):
+    def compare_encoding(self, person):
         pass
 
     def update_people(self):
@@ -124,7 +133,7 @@ class Tracker:
             handled = False
             for person in self.people:
                 difference = self.people[person].distance_from_pose(pose)
-                if difference < .05:
+                if difference < self.maximum_difference_to_match:
                     self.people[person].update(pose)
 
                     handled = True

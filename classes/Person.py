@@ -20,6 +20,8 @@ class Person:
     last_seen - how many frames since the person has been seen last
 
     pose_index - what index body is it, when we're not checking faces
+    
+    body_tracking_weights = weights to multiply by when calculating distances
     """
 
     def __init__(self):
@@ -32,6 +34,27 @@ class Person:
 
         self.encodings = []
         self.last_face_scan = None
+        
+        # self.body_tracking_weights = [
+        #     0.1, #Nose
+        #     1, #Neck
+        #     1.5, #RShoulder
+        #     0.1, #RElbow
+        #     0.1, #RWrist
+        #     1.5, #LShoulder
+        #     0.1, #LElbow
+        #     0.1, #LWrist
+        #     1.5, #RHip
+        #     0.1, #RKnee
+        #     0.1, #RAnkle
+        #     1.5, #LHip
+        #     0.1, #LKnee
+        #     0.1, #LAnkle
+        #     0.1, #REye
+        #     0.1, #LEye
+        #     0.1, #REar
+        #     0.1, #LEar
+        # ]
     
     def tock(self):
         if not self.is_visible:
@@ -86,27 +109,19 @@ class Person:
     #Calculate the distance difference between the two poses given
     def distance_from_pose(self, pose):
         differences = []
-        for body_part in pose.body_parts:
-            # print("body part", body_part, str(body_part))
-            # print(self.pose.body_parts)
-            # print(self.pose.body_parts[body_part])
-            # print(hasattr(self.pose.body_parts, str(body_part)))
-            # print(type(self.pose.body_parts))
-            try:
-                difference_x = pose.body_parts[body_part].x - self.pose.body_parts[body_part].x
-                difference_y = pose.body_parts[body_part].y - self.pose.body_parts[body_part].y
-
-                difference_total = math.sqrt( difference_x ** 2 + difference_y ** 2 )
-                differences.append(difference_total)
-            except:
+        for key, body_part in pose.body_parts.items():
+            current_body_part = self.pose.body_parts.get(key)
+            if current_body_part is None:
                 continue
-            
-            # if hasattr(self.pose.body_parts, str(body_part)):
-            #     difference_x = pose.body_parts[body_part].x - self.pose.body_parts[body_part].x
-            #     difference_y = pose.body_parts[body_part].y - self.pose.body_parts[body_part].y
 
-            #     difference_total = math.sqrt( difference_x ** 2 + difference_y ** 2 )
-            #     differences.append(difference_total)
+            difference_x = body_part.x - current_body_part.x
+            difference_y = body_part.y - current_body_part.y
+
+            difference_total = math.sqrt( difference_x ** 2 + difference_y **2)
+            if self.body_tracking_weights is not None:
+                difference_total *= self.body_tracking_weights[key]
+            differences.append(difference_total)
+
         if len(differences) <= 0:
             average_difference = 1
         else:
