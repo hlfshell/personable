@@ -7,9 +7,7 @@ class Person:
     """
     id = string, uuid for the person. This may change even if its the same person, simply
             because we're looking only at instance id //note- not sure if this will change
-    name = string - if provided, it is the matched name based on face. if not, it will generate
-                human readable identification (ie A, B, etc)
-
+            
     pose - last known pose estimation 
     face - boundaries (top, left, bottom, right) of face bounding box
     encodings - [] of known facial encodings
@@ -26,7 +24,6 @@ class Person:
 
     def __init__(self):
         self.id = uuid4()
-        self.name = None
         self.last_seen = 0
         self.is_visible = False
 

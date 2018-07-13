@@ -177,10 +177,13 @@ class Tracker:
                 self.scan_face(image, person)
 
             if person.last_face_scan == 0:
-                name = self.compare_known_faces(person)
+                id = self.compare_known_faces(person)
 
-                if name is not None:
-                    person.name = name
+                if self.people[id] is not None:
+                    person[id] = person
+
+                if id is not None:
+                    person.id = id
 
             self.people[person].tock()
 
