@@ -77,13 +77,8 @@ class Tracker:
 
                 cv2.rectangle(image, (left, top), (right, bottom), (0,0, 255), 2, 0)
 
-                # if draw_label:
-                #     label = ""
-                #     if self.people[person].name:
-                #         label = self.people[person].name
-                #     else:
-                #         label = self.people[person].id
-                #     cv2.putText(image, label, (right, bottom), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
+                if draw_label:
+                    cv2.putText(image, self.people[person].id, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255))
 
 
         return image
@@ -179,7 +174,8 @@ class Tracker:
             if person.last_face_scan == 0:
                 id = self.compare_known_faces(person)
 
-                if self.people[id] is not None:
+                older_person = self.people.get(id)
+                if older_person is not None:
                     person[id] = person
 
                 if id is not None:

@@ -7,7 +7,7 @@ class Person:
     """
     id = string, uuid for the person. This may change even if its the same person, simply
             because we're looking only at instance id //note- not sure if this will change
-            
+
     pose - last known pose estimation 
     face - boundaries (top, left, bottom, right) of face bounding box
     encodings - [] of known facial encodings
