@@ -61,8 +61,6 @@ class Tracker:
                 if person.is_visible:
                     poses.append(person.pose)
 
-            # print(poses, len(poses))
-            # poses = list(map(lambda person: person.pose if person.is_visible, self.people))
             TfPoseEstimator.draw_humans(image, poses, imgcopy=False)
 
         for person in self.people:
@@ -123,7 +121,7 @@ class Tracker:
                 break
 
         biggest_match = max(counts, key=counts.get)
-        print("MATCHES", counts[biggest_match])
+
         if(counts[biggest_match] <= 3):
             return None
         else:
@@ -180,7 +178,7 @@ class Tracker:
 
             if person.last_face_scan == 0:
                 name = self.compare_known_faces(person)
-                print("NAME", name)
+
                 if name is not None:
                     person.name = name
 
