@@ -35,6 +35,7 @@ class Person:
         self.encodings = []
         self.last_face_scan = None
         
+        self.body_tracking_weights = None
         # self.body_tracking_weights = [
         #     0.1, #Nose
         #     1, #Neck

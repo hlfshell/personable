@@ -28,7 +28,7 @@ class Tracker:
 
     def __init__(self):
         self.frame_count = 0
-        self.scan_every_n_frames = 72
+        self.scan_every_n_frames = 120
         self.max_face_scans = 5
         self.maximum_difference_to_match = 0.08
 
@@ -50,9 +50,6 @@ class Tracker:
         w = 432
         h = 368
         return self.estimator.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
-
-    def compare_encoding(self, person):
-        pass
 
     def update_people(self):
         pass
@@ -100,19 +97,37 @@ class Tracker:
         top, left, bottom, right = person.face
 
         top = math.floor(top * image.shape[0])
-        left = math.floor(top * image.shape[1])
-        bottom = math.floor(top * image.shape[0])
-        right = math.floor(top * image.shape[1])
-        print("SCANNING", person.id)
+        left = math.floor(left * image.shape[1])
+        bottom = math.floor(bottom * image.shape[0])
+        right = math.floor(right * image.shape[1])
+
         encoding = face_recognition.face_encodings(image, [(top, right, bottom, left)])
-        
+
         if len(encoding) <= 0:
             return
-
+        
+        encoding = encoding[0]
         person.set_encoding(encoding)
 
     def compare_known_faces(self, person):
-        pass
+        name_key = []
+        encodings = []
+        counts = {}
+        for name in self.encodings:
+            results = face_recognition.compare_faces(self.encodings[name], person.encodings[-1])
+
+            match_count = results.count(True)
+            counts[name] = match_count
+
+            if match_count / len(results) >= 0.75:
+                break
+
+        biggest_match = max(counts, key=counts.get)
+        print("MATCHES", counts[biggest_match])
+        if(counts[biggest_match] <= 3):
+            return None
+        else:
+            return biggest_match
 
     # Handed a frame to process for tracking
     def process_frame(self, image):
@@ -164,7 +179,10 @@ class Tracker:
                 self.scan_face(image, person)
 
             if person.last_face_scan == 0:
-                self.compare_known_faces(person)
+                name = self.compare_known_faces(person)
+                print("NAME", name)
+                if name is not None:
+                    person.name = name
 
             self.people[person].tock()
 
