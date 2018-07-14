@@ -4,6 +4,8 @@ from tf_pose.networks import get_graph_path, model_wh
 import math
 import face_recognition
 import pickle
+import os
+from os.path import join, isfile
 
 from .Person import Person
 
@@ -47,6 +49,31 @@ class Tracker:
         encoding_file = open(filepath, "wb")
         encoding_file.write(pickle.dumps(self.encodings))
         encoding_file.close()
+
+    def create_encodings(self, faces_directory):
+        facedirs = [filename for filename in os.listdir(faces_directory) if not isfile(join(faces_directory, filename))]
+        faces = dict.fromkeys(facedirs, [])
+        encodings = {}
+
+        for name in facedirs:
+                faces[name] = []
+
+                for filepath in [filename for filename in os.listdir(join(faces_directory, name)) if isfile(join(faces_directory, name, filename))]:
+                    faces[name].append(join(faces_directory, name, filepath))
+
+        for name in faces:
+            encodings[name] = []
+            
+            for filepath in faces[name]:
+                try:
+                    image = cv2.imread(filepath)
+                    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                    encoding = face_recognition.face_encodings(image, [(0, 0, image.shape[0], image.shape[1])])
+                    encodings[name].append(encoding[0])
+                except:
+                    continue
+
+        self.encodings = encodings
 
     def get_pose(self, image):
         w = 432
@@ -170,7 +197,7 @@ class Tracker:
             #Scan the face of everyone else that hasnt been scanned for
             #self.scan_every_n_frames
 
-            if person.is_visible and person.last_face_scan % self.scan_every_n_frames == 0 and len(person.encodings) =< self.max_face_scans:
+            if person.is_visible and person.last_face_scan % self.scan_every_n_frames == 0 and len(person.encodings) < self.max_face_scans:
                 self.scan_face(image, person)
 
             if person.last_face_scan == 0:
