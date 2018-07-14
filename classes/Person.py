@@ -1,6 +1,8 @@
 import math
 import functools
-from uuid import uuid4
+from uuid import uuid4, uuid1
+import os
+import cv2
 
 class Person:
 
@@ -23,7 +25,7 @@ class Person:
     """
 
     def __init__(self):
-        self.id = uuid4()
+        self.id = str(uuid4())
         self.last_seen = 0
         self.is_visible = False
 
@@ -103,6 +105,18 @@ class Person:
                 top = 0
 
         return (top, left, bottom, right)
+
+    def save_face(self, image, filepath):
+        if not os.path.exists(os.path.join(filepath, self.id)):
+            os.makedirs(os.path.join(filepath, self.id))
+
+        top = math.floor(self.face[0] * image.shape[0])
+        left = math.floor(self.face[1] * image.shape[1])
+        bottom = math.floor(self.face[2] * image.shape[0])
+        right = math.floor(self.face[3] * image.shape[1])
+
+        out = image[top:bottom, left:right]
+        cv2.imwrite(os.path.join(filepath, self.id, str(uuid1())) + ".jpg", out)
 
     #Calculate the distance difference between the two poses given
     def distance_from_pose(self, pose):

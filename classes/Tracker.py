@@ -24,6 +24,7 @@ class Tracker:
 
     poses = [] of poses from TfPoseEstimator from current frame
     faces = [] positions of faces from current frame
+    save_faces_to - None if disabled, a string for an existing dir if enabled
     """
 
     def __init__(self):
@@ -37,6 +38,7 @@ class Tracker:
 
         self.estimator = TfPoseEstimator(get_graph_path("mobilenet_thin"), target_size=(432, 368))
         self.encodings = {}
+        self.save_faces_to = None
 
     def load_encodings(self, filepath):
         self.encodings = pickle.loads(open("./encodings.p", "rb").read())
@@ -50,9 +52,6 @@ class Tracker:
         w = 432
         h = 368
         return self.estimator.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=4.0)
-
-    def update_people(self):
-        pass
 
     def draw_output(self, image, draw_body=True, draw_face=True, draw_label=True):
         if draw_body:
@@ -103,6 +102,9 @@ class Tracker:
         person.set_encoding(encoding)
 
     def compare_known_faces(self, person):
+        if len(list(self.encodings.keys())) is 0:
+            return
+
         name_key = []
         encodings = []
         counts = {}
@@ -168,7 +170,7 @@ class Tracker:
             #Scan the face of everyone else that hasnt been scanned for
             #self.scan_every_n_frames
 
-            if person.is_visible and person.last_face_scan % self.scan_every_n_frames == 0 and len(person.encodings) < self.max_face_scans:
+            if person.is_visible and person.last_face_scan % self.scan_every_n_frames == 0 and len(person.encodings) =< self.max_face_scans:
                 self.scan_face(image, person)
 
             if person.last_face_scan == 0:
@@ -180,6 +182,8 @@ class Tracker:
 
                 if id is not None:
                     person.id = id
+                elif self.save_faces_to:
+                    person.save_face(image, self.save_faces_to)
 
             self.people[person].tock()
 
