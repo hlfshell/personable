@@ -1,7 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 
-from personable import Tracker
+from personable.Tracker import Tracker
 
 tracker = Tracker()
 # tracker.load_encodings("./encodings.p")

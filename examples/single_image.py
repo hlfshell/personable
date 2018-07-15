@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--image_path", help="Path to an image for the test")
@@ -11,7 +12,7 @@ if args.image_path is None:
 import cv2
 import matplotlib.pyplot as plt
 
-from personable import Tracker
+from personable.Tracker import Tracker
 
 tracker = Tracker()
 
