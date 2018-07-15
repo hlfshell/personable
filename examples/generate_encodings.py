@@ -1,6 +1,4 @@
 import argparse
-import sys
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--faces_path", help="Path to the directory of faces")
 parser.add_argument("--encodings_file", help="Where to save the encodings file")
@@ -13,10 +11,8 @@ if args.faces_path is None:
 if args.encodings_file is None:
     print("A path for the encodings file must be passed with --encodings_file encodings.p")
     sys.exit()
-    
-sys.path.append("..")
 
-from classes.Tracker import Tracker
+from personable import Tracker
 
 tracker = Tracker()
 tracker.create_encodings(args.faces_path)

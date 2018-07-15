@@ -7,7 +7,7 @@ import pickle
 import os
 from os.path import join, isfile
 
-from .Person import Person
+from personable import Person
 
 class Tracker:
 

@@ -1,10 +1,7 @@
-import sys
-sys.path.append("..")
-
 import cv2
 import matplotlib.pyplot as plt
 
-from classes.Tracker import Tracker
+from personable import Tracker
 
 tracker = Tracker()
 # tracker.load_encodings("./encodings.p")
