@@ -8,4 +8,9 @@ setup(name='personable',
       author_email='kchester@gmail.com',
       license='MIT',
       packages=['personable'],
+      install_requires=[
+          'face-recognition>=1.22',
+          'face-recognition-models>=0.3.0',
+          'opencv-python>=3.4.1.15'
+      ],
       zip_safe=False)
