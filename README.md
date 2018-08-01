@@ -2,6 +2,34 @@
 
 `personable` is a module that handles frame by frame tracking of people, with the ability to recognize people via their faces. It utilizes the [face_recognition](https://github.com/ageitgey/face_recognition) and [tf_pose](https://github.com/ildoonet/tf-pose-estimation) libraries.
 
+# Install
+
+Installing is mostly done through pip, with the exception of the `tf_pose` library as it is not published on pip.
+
+## Installing most of the requirements:
+
+To start the installing the module, do the following:
+
+```
+$ git clone https://github.com/hlfshell/personable.git
+$ cd personable
+$ pip install .
+```
+
+## Tensorflow
+
+I did not specify tensorflow as a requirement, as it can run with either `tensorflow` or `tensorflow-gpu` modules. The GPU will obviously run faster if available.
+
+## Installing tf_pose
+
+The `tf_pose`'s github page is [here](https://github.com/ildoonet/tf-pose-estimation). The install can be done as such:
+
+```
+$ git clone https://www.github.com/ildoonet/tf-openpose
+$ cd tf-openpose
+$ pip install -r requirements.txt
+```
+
 # Simple usage
 Here is a simple usage of using `opencv` to open a webcam and process each frame, tracking whomever it sees and memorizing their faces:
 ```
